@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type Smasher struct {}
@@ -17,14 +18,18 @@ func (s Smasher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Smasher) SmashBodies(urls []string) string {
-	resp, err := http.Get(urls[0])
-	if err != nil {
-		fmt.Errorf("error making get request to url %s, %v", urls[0], err)
+	var bodies []string
+	for _, url := range urls {
+		resp, err := http.Get(url)
+		if err != nil {
+			fmt.Errorf("error making get request to url %s, %v", urls[0], err)
+		}
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		r := string(body)
+		bodies = append(bodies, r)
 	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	r := string(body)
-	return r
+	return strings.Join(bodies, "")
 }
 
 func main() {
