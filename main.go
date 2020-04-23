@@ -8,7 +8,9 @@ import (
 	"strings"
 )
 
-type Smasher struct {}
+type Smasher struct {
+	bodies []string
+}
 
 
 func (s Smasher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -18,18 +20,21 @@ func (s Smasher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Smasher) SmashBodies(urls []string) string {
-	var bodies []string
 	for _, url := range urls {
-		resp, err := http.Get(url)
-		if err != nil {
-			fmt.Errorf("error making get request to url %s, %v", urls[0], err)
-		}
-		defer resp.Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
-		r := string(body)
-		bodies = append(bodies, r)
+		body := s.getBodies(url)
+		s.bodies = append(s.bodies, body)
 	}
-	return strings.Join(bodies, "")
+	return strings.Join(s.bodies, "")
+}
+
+func (s Smasher) getBodies(url string) string {
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Errorf("error making get request to url %s, %v", url, err)
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
 }
 
 func main() {
