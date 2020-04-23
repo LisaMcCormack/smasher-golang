@@ -8,12 +8,16 @@ import (
 type Smasher struct{}
 
 func (s Smasher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, s.getBody(r))
+}
+
+func (s Smasher) getBody(r *http.Request) string {
+	body := "Hello World"
 	urls := r.URL.Query()["urls"]
 	if len(urls) == 1 {
-		fmt.Fprint(w, "Bob")
-	} else {
-		fmt.Fprint(w, "Hello World")
+		body = "Bob"
 	}
+	return body
 }
 
 
