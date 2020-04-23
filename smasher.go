@@ -2,22 +2,38 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
-type Smasher struct{}
-
-func (s Smasher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, s.getBody(r))
+type Server struct {
+	smasher Smasher
 }
 
-func (s Smasher) getBody(r *http.Request) string {
-	body := "Hello World"
+type Smasher interface {
+	getBody(r *http.Request) string
+}
+
+
+
+
+func NewServer(smasher Smasher) *Server {
+	return &Server{smasher}
+}
+
+func (d *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	    body := d.smasher.getBody(r)
+		fmt.Fprint(w, body)
+}
+
+type Smoosher struct {}
+
+func (s Smoosher) getBody(r *http.Request) string {
 	urls := r.URL.Query()["urls"]
-	if len(urls) == 1 {
-		body = "Bob"
-	}
-	return body
+	resp, _ := http.Get(urls[0])
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
 }
 
 
