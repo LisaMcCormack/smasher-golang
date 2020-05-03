@@ -3,26 +3,22 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
 type StubSmasher struct {
-	store []string
 }
 
-func (s *StubSmasher) getBody(url string) {
+func (s *StubSmasher) getBody(url string) (result string) {
 	if url == "bob.com" {
-		s.store = append(s.store, "bob")
+		result += "bob"
 	}
 	if url == "cat.com" {
-		s.store = append(s.store, "cat")
+		result += "cat"
 	}
+	return result
 }
 
-func (s *StubSmasher) smasher() string {
-	return strings.Join(s.store, "")
-}
 
 func TestSmasher(t *testing.T) {
 

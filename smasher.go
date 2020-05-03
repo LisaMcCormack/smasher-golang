@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 type Server struct {
@@ -12,8 +11,7 @@ type Server struct {
 }
 
 type Smasher interface {
-	getBody(url string)
-	smasher() string
+	getBody(url string) string
 }
 
 func NewServer(smasher Smasher) *Server {
@@ -21,23 +19,20 @@ func NewServer(smasher Smasher) *Server {
 }
 
 func (d *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	result := ""
 	urls := r.URL.Query()["urls"]
 	for _, url := range urls {
-		d.smasher.getBody(url)
+		body := d.smasher.getBody(url)
+		result += body
 	}
-	fmt.Fprint(w, d.smasher.smasher())
+	fmt.Fprint(w, result)
 }
 
-type Smoosher struct {
-	store []string
-}
+type Smoosher struct {}
 
-func (s *Smoosher) smasher() string {
-	string := strings.Join(s.store, "")
-	return string
-}
 
-func (s *Smoosher) getBody(url string) {
+
+func (s *Smoosher) getBody(url string) string {
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("error getting body: %v", err)
@@ -47,5 +42,5 @@ func (s *Smoosher) getBody(url string) {
 	if err != nil {
 		fmt.Printf("error reading body: %v", err)
 	}
-	s.store = append(s.store, string(body))
+	return string(body)
 }
